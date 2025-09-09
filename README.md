@@ -9,7 +9,6 @@ network application by golang
 - **TCP 简单消息通信**
 
 
-```
 # 项目结构
 
 gnb/
