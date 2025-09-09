@@ -1,4 +1,4 @@
-**GNB
+**GNB**
 network application by golang
 # 项目说明
 
