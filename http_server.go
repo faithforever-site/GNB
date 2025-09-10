@@ -1,7 +1,9 @@
 package main
 
 import (
+	"io"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -12,9 +14,26 @@ func startHTTPServer() {
 
 	http.HandleFunc("/upload", uploadHandler)
 	http.HandleFunc("/download/", downloadHandler)
-
+	http.HandleFunc("/tcp", tcpForwardHandler) // TCP 测试接口
 	log.Println("HTTP server running on :8080")
 	http.ListenAndServe(":8080", nil)
+}
+
+func tcpForwardHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	msg, _ := io.ReadAll(r.Body)
+
+	conn, err := net.Dial("tcp", "localhost:9090")
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	defer conn.Close()
+
+	conn.Write(msg)
+	buf := make([]byte, 1024)
+	n, _ := conn.Read(buf)
+	w.Write(buf[:n])
 }
 
 func uploadHandler(w http.ResponseWriter, r *http.Request) {

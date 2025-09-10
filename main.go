@@ -1,14 +1,14 @@
 package main
 
+import "net/http"
+
 func main() {
-	// 启动 HTTP 文件服务
-	go startHTTPServer()
+	go startHTTPServer()      // HTTP 文件服务
+	go startWebSocketServer() // WebSocket 聊天
+	go startTCPServer()       // TCP 消息通信
 
-	// 启动 WebSocket 聊天服务
-	go startWebSocketServer()
-
-	// 启动 TCP 服务器
-	go startTCPServer()
+	// 提供前端页面
+	http.Handle("/", http.FileServer(http.Dir("static")))
 
 	// 阻塞主线程
 	select {}

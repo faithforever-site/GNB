@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Go 网络实战平台</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        section { margin-bottom: 30px; }
+    </style>
+</head>
+<body>
+
+<h1>Go 网络实战平台</h1>
+
+<!-- 文件上传 -->
+<section>
+    <h2>1. 文件上传</h2>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" id="fileInput" name="file">
+        <button type="submit">上传文件</button>
+    </form>
+    <div id="uploadResult"></div>
+</section>
+
+<!-- WebSocket 聊天 -->
+<section>
+    <h2>2. WebSocket 聊天</h2>
+    <input type="text" id="wsInput" placeholder="输入消息">
+    <button id="wsSend">发送</button>
+    <div id="wsLog" style="border:1px solid #ccc; padding:10px; height:150px; overflow:auto;"></div>
+</section>
+
+<!-- TCP 测试 -->
+<section>
+    <h2>3. TCP 测试</h2>
+    <input type="text" id="tcpInput" placeholder="输入TCP消息">
+    <button id="tcpSend">发送TCP消息</button>
+    <div id="tcpLog" style="border:1px solid #ccc; padding:10px; height:100px; overflow:auto;"></div>
+</section>
+
+<script>
+    // 文件上传
+    document.getElementById("uploadForm").onsubmit = function(e) {
+        e.preventDefault();
+        let file = document.getElementById("fileInput").files[0];
+        let formData = new FormData();
+        formData.append("file", file);
+        fetch("/upload", { method: "POST", body: formData })
+            .then(res => res.text())
+            .then(text => document.getElementById("uploadResult").innerText = text);
+    }
+
+    // WebSocket 聊天
+    let ws = new WebSocket("ws://localhost:8081/ws");
+    ws.onmessage = function(e) {
+        let log = document.getElementById("wsLog");
+        log.innerHTML += e.data + "<br>";
+        log.scrollTop = log.scrollHeight;
+    };
+    document.getElementById("wsSend").onclick = function() {
+        let msg = document.getElementById("wsInput").value;
+        ws.send(msg);
+        document.getElementById("wsInput").value = "";
+    }
+
+    // TCP 测试（通过 fetch 调用 TCP 测试接口，需后端支持 HTTP 转发）
+    document.getElementById("tcpSend").onclick = function() {
+        let msg = document.getElementById("tcpInput").value;
+        fetch("/tcp", { method: "POST", body: msg })
+            .then(res => res.text())
+            .then(text => {
+                let log = document.getElementById("tcpLog");
+                log.innerHTML += text + "<br>";
+                log.scrollTop = log.scrollHeight;
+            });
+        document.getElementById("tcpInput").value = "";
+    }
+</script>
+
+</body>
+</html>

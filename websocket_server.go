@@ -1,12 +1,18 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
 )
 
-var upgrader = websocket.Upgrader{}
+var upgrader = websocket.Upgrader{
+	// 允许所有跨域请求（开发环境）
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+}
 var clients = make(map[*websocket.Conn]bool)
 
 func startWebSocketServer() {
@@ -32,12 +38,14 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			break
 		}
+		fmt.Println(msg)
 		broadcast(msg)
 	}
 }
 
 func broadcast(msg []byte) {
 	for client := range clients {
+
 		client.WriteMessage(websocket.TextMessage, msg)
 	}
 }
