@@ -27,14 +27,33 @@ func startTCPServer() {
 
 // 处理单个 TCP 客户端连接
 func handleTCPConn(conn net.Conn) {
+	//defer conn.Close()
+	//buf := make([]byte, 1024)
+	//n, err := conn.Read(buf)
+	//if err != nil {
+	//	fmt.Println("TCP read error:", err)
+	//	return
+	//}
+	//fmt.Println("TCP Received:", string(buf[:n]))
+	//// 回应客户端
+	//conn.Write([]byte("TCP message received"))
 	defer conn.Close()
 	buf := make([]byte, 1024)
-	n, err := conn.Read(buf)
-	if err != nil {
-		fmt.Println("TCP read error:", err)
-		return
+
+	for {
+		n, err := conn.Read(buf)
+		if err != nil {
+			fmt.Println("TCP read error:", err)
+			return // 退出循环并关闭连接
+		}
+		msg := string(buf[:n])
+		fmt.Println("TCP Received:", msg)
+
+		// 回应客户端（回显消息）
+		_, err = conn.Write([]byte("收到: " + msg))
+		if err != nil {
+			fmt.Println("TCP write error:", err)
+			return
+		}
 	}
-	fmt.Println("TCP Received:", string(buf[:n]))
-	// 回应客户端
-	conn.Write([]byte("TCP message received"))
 }

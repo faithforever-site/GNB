@@ -95,21 +95,21 @@
 
 
     // TCP 测试（通过 HTTP 转发）
-    document.getElementById("tcpSend").onclick=function(){
-        let msg=document.getElementById("tcpInput").value;
-        if(!msg) return;
-        fetch("/tcp",{method:"POST",body:msg})
-            .then(res=>res.text())
-            .then(text=>{
-                let log=document.getElementById("tcpLog");
-                log.innerHTML+=`<div class="msg-other">[${timestamp()}] 服务器: ${text}</div>`;
-                log.scrollTop=log.scrollHeight;
+    document.getElementById("tcpSend").onclick = function () {
+        let msg = document.getElementById("tcpInput").value;
+        if (!msg) return;
+        fetch("/tcp", {method: "POST", body: msg})
+            .then(res => res.text())
+            .then(text => {
+                let log = document.getElementById("tcpLog");
+                log.innerHTML += `<div class="msg-other">[${timestamp()}] 服务器: ${text}</div>`;
+                log.scrollTop = log.scrollHeight;
             });
-        let log=document.getElementById("tcpLog");
-        log.innerHTML+=`<div class="msg-self">[${timestamp()}] 我: ${msg}</div>`;
-        log.scrollTop=log.scrollHeight;
-        document.getElementById("tcpInput").value="";
-    };
+        let log = document.getElementById("tcpLog");
+        log.innerHTML += `<div class="msg-self">[${timestamp()}] 我: ${msg}</div>`;
+        log.scrollTop = log.scrollHeight;
+        document.getElementById("tcpInput").value = "";
+    }
 </script>
 
 
