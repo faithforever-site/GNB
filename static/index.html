@@ -4,70 +4,22 @@
     <meta charset="UTF-8">
     <title>Go 网络实战平台</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: #f4f4f9;
-        }
-        header {
-            background: #4a90e2;
-            color: #fff;
-            padding: 15px;
-            text-align: center;
-            font-size: 1.5em;
-        }
-        .container {
-            display: flex;
-            flex-wrap: wrap;
-            padding: 20px;
-            gap: 20px;
-            justify-content: center;
-        }
-        section {
-            background: #fff;
-            border-radius: 8px;
-            padding: 15px;
-            flex: 1 1 300px;
-            max-width: 500px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        section h2 {
-            margin-top: 0;
-            color: #333;
-        }
-        #wsLog, #tcpLog, #uploadResult {
-            border:1px solid #ccc;
-            padding:10px;
-            height:150px;
-            overflow:auto;
-            border-radius: 5px;
-            background: #fafafa;
-        }
-        input[type="text"], input[type="file"], button {
-            padding: 8px;
-            margin-top: 5px;
-            width: calc(100% - 16px);
-            border-radius: 4px;
-            border: 1px solid #ccc;
-        }
-        button {
-            background: #4a90e2;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #357ab8;
-        }
-        .msg-self { color: #1e88e5; font-weight: bold; }
-        .msg-other { color: #43a047; }
+        body { font-family: Arial; margin:0; padding:0; background:#f4f4f9; }
+        header { background:#4a90e2; color:#fff; padding:15px; text-align:center; font-size:1.5em; }
+        .container { display:flex; flex-wrap:wrap; padding:20px; gap:20px; justify-content:center; }
+        section { background:#fff; border-radius:8px; padding:15px; flex:1 1 300px; max-width:500px; box-shadow:0 2px 8px rgba(0,0,0,0.1);}
+        section h2 { margin-top:0; color:#333;}
+        #wsLog,#tcpLog,#uploadResult { border:1px solid #ccc; padding:10px; height:150px; overflow:auto; border-radius:5px; background:#fafafa;}
+        input[type="text"],input[type="file"],button { padding:8px; margin-top:5px; width:calc(100%-16px); border-radius:4px; border:1px solid #ccc;}
+        button { background:#4a90e2; color:#fff; border:none; cursor:pointer;}
+        button:hover { background:#357ab8;}
+        .msg-self { color:#1e88e5; font-weight:bold; }
+        .msg-other { color:#43a047; }
     </style>
 </head>
 <body>
 
 <header>Go 网络实战平台</header>
-
 <div class="container">
 
     <!-- 文件上传 -->
@@ -108,6 +60,7 @@
     document.getElementById("uploadForm").onsubmit = function (e) {
         e.preventDefault();
         let file = document.getElementById("fileInput").files[0];
+        if(!file) return;
         let formData = new FormData();
         formData.append("file", file);
         fetch("/upload", {method: "POST", body: formData})
@@ -116,7 +69,7 @@
     }
 
     // WebSocket 聊天
-    let ws = new WebSocket("ws://localhost:8081/ws");
+    let ws = new WebSocket("ws://localhost:8080/ws");
     // 获取或生成一个唯一 ID
     let myId = localStorage.getItem("chatId");
     if (!myId) {
@@ -142,21 +95,21 @@
 
 
     // TCP 测试（通过 HTTP 转发）
-    document.getElementById("tcpSend").onclick = function () {
-        let msg = document.getElementById("tcpInput").value;
-        if (!msg) return;
-        fetch("/tcp", {method: "POST", body: msg})
-            .then(res => res.text())
-            .then(text => {
-                let log = document.getElementById("tcpLog");
-                log.innerHTML += `<div class="msg-other">[${timestamp()}] 服务器: ${text}</div>`;
-                log.scrollTop = log.scrollHeight;
+    document.getElementById("tcpSend").onclick=function(){
+        let msg=document.getElementById("tcpInput").value;
+        if(!msg) return;
+        fetch("/tcp",{method:"POST",body:msg})
+            .then(res=>res.text())
+            .then(text=>{
+                let log=document.getElementById("tcpLog");
+                log.innerHTML+=`<div class="msg-other">[${timestamp()}] 服务器: ${text}</div>`;
+                log.scrollTop=log.scrollHeight;
             });
-        let log = document.getElementById("tcpLog");
-        log.innerHTML += `<div class="msg-self">[${timestamp()}] 我: ${msg}</div>`;
-        log.scrollTop = log.scrollHeight;
-        document.getElementById("tcpInput").value = "";
-    }
+        let log=document.getElementById("tcpLog");
+        log.innerHTML+=`<div class="msg-self">[${timestamp()}] 我: ${msg}</div>`;
+        log.scrollTop=log.scrollHeight;
+        document.getElementById("tcpInput").value="";
+    };
 </script>
 
 

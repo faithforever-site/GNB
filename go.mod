@@ -1,4 +1,4 @@
-module gnd
+module gnb
 
 go 1.22
 
