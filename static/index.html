@@ -4,40 +4,99 @@
     <meta charset="UTF-8">
     <title>Go 网络实战平台</title>
     <style>
-        body { font-family: Arial; margin: 20px; }
-        section { margin-bottom: 30px; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f4f9;
+        }
+        header {
+            background: #4a90e2;
+            color: #fff;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.5em;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 20px;
+            gap: 20px;
+            justify-content: center;
+        }
+        section {
+            background: #fff;
+            border-radius: 8px;
+            padding: 15px;
+            flex: 1 1 300px;
+            max-width: 500px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        section h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        #wsLog, #tcpLog, #uploadResult {
+            border:1px solid #ccc;
+            padding:10px;
+            height:150px;
+            overflow:auto;
+            border-radius: 5px;
+            background: #fafafa;
+        }
+        input[type="text"], input[type="file"], button {
+            padding: 8px;
+            margin-top: 5px;
+            width: calc(100% - 16px);
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background: #4a90e2;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #357ab8;
+        }
+        .msg-self { color: #1e88e5; font-weight: bold; }
+        .msg-other { color: #43a047; }
     </style>
 </head>
 <body>
 
-<h1>Go 网络实战平台</h1>
+<header>Go 网络实战平台</header>
 
-<!-- 文件上传 -->
-<section>
-    <h2>1. 文件上传</h2>
-    <form id="uploadForm" enctype="multipart/form-data">
-        <input type="file" id="fileInput" name="file">
-        <button type="submit">上传文件</button>
-    </form>
-    <div id="uploadResult"></div>
-</section>
+<div class="container">
 
-<!-- WebSocket 聊天 -->
-<section>
-    <h2>2. WebSocket 聊天</h2>
-    <input type="text" id="wsInput" placeholder="输入消息">
-    <button id="wsSend">发送</button>
-    <div id="wsLog" style="border:1px solid #ccc; padding:10px; height:150px; overflow:auto;"></div>
-</section>
+    <!-- 文件上传 -->
+    <section>
+        <h2>1. 文件上传</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" id="fileInput" name="file">
+            <button type="submit">上传文件</button>
+        </form>
+        <div id="uploadResult"></div>
+    </section>
 
-<!-- TCP 测试 -->
-<section>
-    <h2>3. TCP 测试</h2>
-    <input type="text" id="tcpInput" placeholder="输入TCP消息">
-    <button id="tcpSend">发送TCP消息</button>
-    <div id="tcpLog" style="border:1px solid #ccc; padding:10px; height:100px; overflow:auto;"></div>
-</section>
+    <!-- WebSocket 聊天 -->
+    <section>
+        <h2>2. WebSocket 聊天</h2>
+        <input type="text" id="wsInput" placeholder="输入消息">
+        <button id="wsSend">发送</button>
+        <div id="wsLog"></div>
+    </section>
 
+    <!-- TCP 测试 -->
+    <section>
+        <h2>3. TCP 测试</h2>
+        <input type="text" id="tcpInput" placeholder="输入TCP消息">
+        <button id="tcpSend">发送TCP消息</button>
+        <div id="tcpLog"></div>
+    </section>
+
+</div>
 <script>
     // 工具函数：格式化时间
     function timestamp() {
@@ -46,12 +105,12 @@
     }
 
     // 文件上传
-    document.getElementById("uploadForm").onsubmit = function(e) {
+    document.getElementById("uploadForm").onsubmit = function (e) {
         e.preventDefault();
         let file = document.getElementById("fileInput").files[0];
         let formData = new FormData();
         formData.append("file", file);
-        fetch("/upload", { method: "POST", body: formData })
+        fetch("/upload", {method: "POST", body: formData})
             .then(res => res.text())
             .then(text => document.getElementById("uploadResult").innerText = `[${timestamp()}] ${text}`);
     }
@@ -64,40 +123,37 @@
         myId = crypto.randomUUID(); // 或者 Date.now()+"-"+Math.random()
         localStorage.setItem("chatId", myId);
     }
-    // 发送时只发，不立刻显示
     document.getElementById("wsSend").onclick = function() {
         let msg = document.getElementById("wsInput").value;
         if (!msg) return;
         ws.send(JSON.stringify({ id: myId, msg: msg }));
         document.getElementById("wsInput").value = "";
     };
-
     ws.onmessage = function(e) {
         let data = JSON.parse(e.data);
         let log = document.getElementById("wsLog");
         if (data.id === myId) {
-            log.innerHTML += `[${timestamp()}] 我: ${data.msg}<br>`;
+            log.innerHTML += `<div class="msg-self">[${timestamp()}] 我: ${data.msg}<br>`;
         } else {
-            log.innerHTML += `[${timestamp()}] 其他(${data.id}): ${data.msg}<br>`;
+            log.innerHTML += `<div class="msg-other">[${timestamp()}] 其他(${data.id}): ${data.msg}<br>`;
         }
         log.scrollTop = log.scrollHeight;
     };
 
 
-
     // TCP 测试（通过 HTTP 转发）
-    document.getElementById("tcpSend").onclick = function() {
+    document.getElementById("tcpSend").onclick = function () {
         let msg = document.getElementById("tcpInput").value;
         if (!msg) return;
-        fetch("/tcp", { method: "POST", body: msg })
+        fetch("/tcp", {method: "POST", body: msg})
             .then(res => res.text())
             .then(text => {
                 let log = document.getElementById("tcpLog");
-                log.innerHTML += `[${timestamp()}] 服务器: ${text}<br>`;
+                log.innerHTML += `<div class="msg-other">[${timestamp()}] 服务器: ${text}</div>`;
                 log.scrollTop = log.scrollHeight;
             });
         let log = document.getElementById("tcpLog");
-        log.innerHTML += `[${timestamp()}] 我: ${msg}<br>`;
+        log.innerHTML += `<div class="msg-self">[${timestamp()}] 我: ${msg}</div>`;
         log.scrollTop = log.scrollHeight;
         document.getElementById("tcpInput").value = "";
     }
