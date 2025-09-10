@@ -39,6 +39,12 @@
 </section>
 
 <script>
+    // 工具函数：格式化时间
+    function timestamp() {
+        let d = new Date();
+        return d.toLocaleTimeString();
+    }
+
     // 文件上传
     document.getElementById("uploadForm").onsubmit = function(e) {
         e.preventDefault();
@@ -47,35 +53,56 @@
         formData.append("file", file);
         fetch("/upload", { method: "POST", body: formData })
             .then(res => res.text())
-            .then(text => document.getElementById("uploadResult").innerText = text);
+            .then(text => document.getElementById("uploadResult").innerText = `[${timestamp()}] ${text}`);
     }
 
     // WebSocket 聊天
     let ws = new WebSocket("ws://localhost:8081/ws");
-    ws.onmessage = function(e) {
-        let log = document.getElementById("wsLog");
-        log.innerHTML += e.data + "<br>";
-        log.scrollTop = log.scrollHeight;
-    };
+    // 获取或生成一个唯一 ID
+    let myId = localStorage.getItem("chatId");
+    if (!myId) {
+        myId = crypto.randomUUID(); // 或者 Date.now()+"-"+Math.random()
+        localStorage.setItem("chatId", myId);
+    }
+    // 发送时只发，不立刻显示
     document.getElementById("wsSend").onclick = function() {
         let msg = document.getElementById("wsInput").value;
-        ws.send(msg);
+        if (!msg) return;
+        ws.send(JSON.stringify({ id: myId, msg: msg }));
         document.getElementById("wsInput").value = "";
-    }
+    };
 
-    // TCP 测试（通过 fetch 调用 TCP 测试接口，需后端支持 HTTP 转发）
+    ws.onmessage = function(e) {
+        let data = JSON.parse(e.data);
+        let log = document.getElementById("wsLog");
+        if (data.id === myId) {
+            log.innerHTML += `[${timestamp()}] 我: ${data.msg}<br>`;
+        } else {
+            log.innerHTML += `[${timestamp()}] 其他(${data.id}): ${data.msg}<br>`;
+        }
+        log.scrollTop = log.scrollHeight;
+    };
+
+
+
+    // TCP 测试（通过 HTTP 转发）
     document.getElementById("tcpSend").onclick = function() {
         let msg = document.getElementById("tcpInput").value;
+        if (!msg) return;
         fetch("/tcp", { method: "POST", body: msg })
             .then(res => res.text())
             .then(text => {
                 let log = document.getElementById("tcpLog");
-                log.innerHTML += text + "<br>";
+                log.innerHTML += `[${timestamp()}] 服务器: ${text}<br>`;
                 log.scrollTop = log.scrollHeight;
             });
+        let log = document.getElementById("tcpLog");
+        log.innerHTML += `[${timestamp()}] 我: ${msg}<br>`;
+        log.scrollTop = log.scrollHeight;
         document.getElementById("tcpInput").value = "";
     }
 </script>
+
 
 </body>
 </html>

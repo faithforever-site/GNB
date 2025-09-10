@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
@@ -38,7 +37,7 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			break
 		}
-		fmt.Println(msg)
+		//fmt.Println(msg)
 		broadcast(msg)
 	}
 }
